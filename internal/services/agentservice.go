@@ -64,6 +64,7 @@ func (s *AgentService) getSystemPrompt() string {
 
 func (s *AgentService) HandleMessage(ctx context.Context, taskID, userText string) (*requests.TaskResult, error) {
 	session := s.getOrCreateSession(taskID)
+	fmt.Println(session.History)
 
 	userHistoryMsg := s.createHistoryMessage("user", userText)
 	session.History = append(session.History, userHistoryMsg)
