@@ -77,6 +77,7 @@ func (c *AgentController) sendSuccess(w http.ResponseWriter, id string, result *
 }
 
 func (c *AgentController) sendError(w http.ResponseWriter, id string, code int, message string) {
+	fmt.{Println("sending error:", message)	}
 	resp := requests.A2AResponse{
 		JsonRPC: "2.0",
 		ID:      id,
