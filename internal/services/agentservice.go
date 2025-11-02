@@ -90,6 +90,8 @@ func (s *AgentService) HandleMessage(ctx context.Context, taskID, userText strin
 	agentHistoryMsg.MessageID = result.Status.Message.MessageID
 	session.History = append(session.History, agentHistoryMsg)
 
+	fmt.Println("Session History:", result)
+
 	return result, nil
 }
 
