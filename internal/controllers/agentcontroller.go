@@ -19,7 +19,6 @@ func NewAgentController(agentService *services.AgentService) *AgentController {
 }
 
 func (c *AgentController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("connected")
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
@@ -30,8 +29,6 @@ func (c *AgentController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		c.sendError(w, "", -32700, "Parse error")
 		return
 	}
-
-	fmt.Println(req)
 
 	if req.JsonRPC != "2.0" {
 		c.sendError(w, req.ID, -32600, "Invalid Request")
@@ -49,7 +46,6 @@ func (c *AgentController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 
 	userText := c.extractUserText(req.Params.Message.Parts)
-	fmt.Println(userText)
 
 	result, err := c.agentService.HandleMessage(r.Context(), req.Params.Message.TaskID, userText)
 	if err != nil {

@@ -59,38 +59,26 @@ func (s *AgentService) getOrCreateSession(taskID string) *requests.SessionData {
 }
 
 func (s *AgentService) getSystemPrompt() string {
-	return `You are a Newsletter Generation Assistant. Your role is to help users create cool newsletters. with links for references`
+	return `GENERATE_NEWSLETTER|Title: `
 }
 
 func (s *AgentService) HandleMessage(ctx context.Context, taskID, userText string) (*requests.TaskResult, error) {
 	session := s.getOrCreateSession(taskID)
-	fmt.Println(session.History)
 
 	userHistoryMsg := s.createHistoryMessage("user", userText)
 	session.History = append(session.History, userHistoryMsg)
 
 	session.Memory.SaveContext(ctx, map[string]any{"input": userText}, map[string]any{})
 
-	messages := s.buildMessages(ctx, session, userText)
+	// aiResponse := response.Choices[0].Content
 
-	response, err := s.llm.GenerateContent(ctx, messages, llms.WithTemperature(0.7))
-	if err != nil {
-		return nil, fmt.Errorf("AI generation failed: %w", err)
-	}
+	session.Memory.SaveContext(ctx, map[string]any{}, map[string]any{"output": userText})
 
-	aiResponse := response.Choices[0].Content
-
-	// fmt.Println("AI Response:", aiResponse)s
-
-	session.Memory.SaveContext(ctx, map[string]any{}, map[string]any{"output": aiResponse})
-
-	result := s.processAIResponse(ctx, session, taskID, aiResponse)
+	result := s.processAIResponse(ctx, session, taskID, userText)
 
 	agentHistoryMsg := s.createHistoryMessage("agent", result.Status.Message.Parts[0].Text)
 	agentHistoryMsg.MessageID = result.Status.Message.MessageID
 	session.History = append(session.History, agentHistoryMsg)
-
-	fmt.Println("Session History:", result)
 
 	return result, nil
 }
@@ -112,13 +100,13 @@ func (s *AgentService) buildMessages(ctx context.Context, session *requests.Sess
 	return messages
 }
 
-func (s *AgentService) processAIResponse(ctx context.Context, session *requests.SessionData, taskID, aiResponse string) *requests.TaskResult {
+func (s *AgentService) processAIResponse(ctx context.Context, session *requests.SessionData, taskID, userText string) *requests.TaskResult {
 	var artifacts []requests.Artifact
 	var finalResponse string
 	state := "in_progress"
 
 	// if strings.Contains(aiResponse, "GENERATE_NEWSLETTER|") {
-	finalResponse, artifacts = s.handleNewsletterGeneration(ctx, session, aiResponse)
+	finalResponse, artifacts = s.handleNewsletterGeneration(ctx, session, userText)
 	// finalResponse, artifacts = s.handleInfographicGeneration(session)
 	// } else if strings.Contains(aiResponse, "GENERATE_INFOGRAPHIC") {
 	// } else {
@@ -132,19 +120,19 @@ func (s *AgentService) processAIResponse(ctx context.Context, session *requests.
 	return s.buildTaskResult(taskID, session, state, finalResponse, artifacts)
 }
 
-func (s *AgentService) handleNewsletterGeneration(ctx context.Context, session *requests.SessionData, aiResponse string) (string, []requests.Artifact) {
-	parts := strings.Split(aiResponse, "|")
-	if len(parts) < 3 {
-		return "I apologize, but I couldn't parse the newsletter details. Let's try again.", nil
-	}
+func (s *AgentService) handleNewsletterGeneration(ctx context.Context, session *requests.SessionData, userText string) (string, []requests.Artifact) {
+	// parts := strings.Split(aiResponse, "|")
+	// if len(parts) < 3 {
+	// 	return "I apologize, but I couldn't parse the newsletter details. Let's try again.", nil
+	// }
 
-	title := strings.TrimSpace(strings.TrimPrefix(parts[1], "Title: "))
-	content := strings.TrimSpace(strings.TrimPrefix(parts[2], "Content: "))
+	title := userText
+	// content := strings.TrimSpace(strings.TrimPrefix(parts[2], "Content: "))
 
 	session.Title = title
-	session.Content = content
+	// session.Content = content
 
-	newsletter, err := s.newsletterSvc.Generate(ctx, title, content)
+	newsletter, err := s.newsletterSvc.Generate(ctx, session, title)
 	if err != nil {
 		return fmt.Sprintf("I apologize, but I encountered an error generating the newsletter: %v\n\nWould you like to try again?", err), nil
 	}
