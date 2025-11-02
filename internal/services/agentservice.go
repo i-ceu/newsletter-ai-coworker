@@ -117,13 +117,13 @@ func (s *AgentService) processAIResponse(ctx context.Context, session *requests.
 	var finalResponse string
 	state := "in_progress"
 
-	if strings.Contains(aiResponse, "GENERATE_NEWSLETTER|") {
-		finalResponse, artifacts = s.handleNewsletterGeneration(ctx, session, aiResponse)
-		// finalResponse, artifacts = s.handleInfographicGeneration(session)
-	} else if strings.Contains(aiResponse, "GENERATE_INFOGRAPHIC") {
-	} else {
-		finalResponse = aiResponse
-	}
+	// if strings.Contains(aiResponse, "GENERATE_NEWSLETTER|") {
+	finalResponse, artifacts = s.handleNewsletterGeneration(ctx, session, aiResponse)
+	// finalResponse, artifacts = s.handleInfographicGeneration(session)
+	// } else if strings.Contains(aiResponse, "GENERATE_INFOGRAPHIC") {
+	// } else {
+	// 	finalResponse = aiResponse
+	// }
 
 	if s.isConversationComplete(finalResponse) {
 		state = "completed"
