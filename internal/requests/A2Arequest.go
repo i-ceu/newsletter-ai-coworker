@@ -46,7 +46,6 @@ type TaskResult struct {
 	Status    *TaskStatus      `json:"status"`
 	Artifacts []Artifact       `json:"artifacts,omitempty"`
 	History   []HistoryMessage `json:"history"`
-	Kind      string           `json:"kind"`
 }
 
 type TaskStatus struct {

@@ -235,6 +235,5 @@ func (s *AgentService) buildTaskResult(taskID string, session *requests.SessionD
 		},
 		Artifacts: artifacts,
 		History:   session.History,
-		Kind:      "task",
 	}
 }
