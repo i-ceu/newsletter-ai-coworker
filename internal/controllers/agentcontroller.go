@@ -20,6 +20,7 @@ func NewAgentController(agentService *services.AgentService) *AgentController {
 
 func (c *AgentController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	fmt.Println("connected")
+	fmt.Println(r)
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
