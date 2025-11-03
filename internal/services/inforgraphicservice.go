@@ -34,7 +34,7 @@ func NewInfographicService() *InfographicService {
 	}
 }
 
-func (s *InfographicService) Generate(title, newsletterText, outputPath string) error {
+func (s *InfographicService) Generate(title, blogpostText, outputPath string) error {
 	rand.NewSource(time.Now().UnixNano())
 	scheme := s.colorSchemes[rand.Intn(len(s.colorSchemes))]
 
@@ -68,7 +68,7 @@ func (s *InfographicService) Generate(title, newsletterText, outputPath string) 
 	dc.Stroke()
 
 	// Content
-	s.renderContent(dc, font, newsletterText, scheme, width, height)
+	s.renderContent(dc, font, blogpostText, scheme, width, height)
 
 	// Footer
 	s.renderFooter(dc, font, scheme, width, height)

@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"newsletter-ai-coworker/internal/requests"
+	"blogpost-ai-coworker/internal/requests"
 )
 
 func CallGroqAPI(prompt string) (string, error) {

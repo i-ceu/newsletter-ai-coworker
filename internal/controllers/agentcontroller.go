@@ -54,6 +54,7 @@ func (c *AgentController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	fmt.Println("response:", result)
 	c.sendSuccess(w, req.ID, result)
 }
 

@@ -1,19 +1,19 @@
 package routes
 
 import (
+	"blogpost-ai-coworker/internal/config"
+	"blogpost-ai-coworker/internal/controllers"
+	"blogpost-ai-coworker/internal/services"
 	"log"
 	"net/http"
-	"newsletter-ai-coworker/internal/config"
-	"newsletter-ai-coworker/internal/controllers"
-	"newsletter-ai-coworker/internal/services"
 )
 
 func RegisterRoutes() {
 	cfg := config.Load()
 
-	newsletterSvc := services.NewBlogPostService(cfg.GroqAPIKey)
+	blogpostSvc := services.NewBlogPostService(cfg.GroqAPIKey)
 	infographicSvc := services.NewInfographicService()
-	agentSvc, err := services.NewAgentService(cfg.GroqAPIKey, newsletterSvc, infographicSvc)
+	agentSvc, err := services.NewAgentService(cfg.GroqAPIKey, blogpostSvc, infographicSvc)
 	if err != nil {
 		log.Fatalf("Failed to create agent service: %v", err)
 	}
