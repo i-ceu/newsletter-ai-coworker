@@ -57,6 +57,7 @@ type TaskStatus struct {
 
 type ResponseMessage struct {
 	MessageID string         `json:"messageId"`
+	TaskID    string         `json:"taskId"`
 	Role      string         `json:"role"`
 	Parts     []ResponsePart `json:"parts"`
 	Kind      string         `json:"kind"`

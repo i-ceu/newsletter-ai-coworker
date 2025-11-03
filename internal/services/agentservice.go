@@ -214,6 +214,7 @@ func (s *AgentService) buildTaskResult(session *requests.SessionData, state, mes
 			Timestamp: time.Now().UTC().Format(time.RFC3339),
 			Message: &requests.ResponseMessage{
 				MessageID: msgID,
+				TaskID:    taskID,
 				Role:      "agent",
 				Parts: []requests.ResponsePart{
 					{Kind: "text", Text: message},
