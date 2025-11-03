@@ -117,7 +117,7 @@ func (s *AgentService) processAIResponse(ctx context.Context, session *requests.
 		state = "completed"
 	}
 
-	return s.buildTaskResult(session, state, artifacts)
+	return s.buildTaskResult(session, state, finalResponse, artifacts)
 }
 
 func (s *AgentService) handleBlogPostGeneration(ctx context.Context, session *requests.SessionData, userText string) (string, []requests.Artifact) {
@@ -158,7 +158,7 @@ func (s *AgentService) handleBlogPostGeneration(ctx context.Context, session *re
 		},
 	}
 
-	response := fmt.Sprintf("BlogPost generated successfully!\n\n%s\n\n═══════════════════════════════════════\n\nWould you like me to create an infographic for this blogpost?", blogpost)
+	response := "BlogPost generated successfully!"
 
 	return response, []requests.Artifact{artifact}
 }
@@ -203,7 +203,7 @@ func (s *AgentService) createHistoryMessage(role, text string) requests.HistoryM
 	}
 }
 
-func (s *AgentService) buildTaskResult(session *requests.SessionData, state string, artifacts []requests.Artifact) *requests.TaskResult {
+func (s *AgentService) buildTaskResult(session *requests.SessionData, state, message string, artifacts []requests.Artifact) *requests.TaskResult {
 	msgID := uuid.New().String()
 
 	return &requests.TaskResult{
@@ -212,7 +212,16 @@ func (s *AgentService) buildTaskResult(session *requests.SessionData, state stri
 		Status: &requests.TaskStatus{
 			State:     state,
 			Timestamp: time.Now().UTC().Format(time.RFC3339),
+			Message: &requests.ResponseMessage{
+				MessageID: msgID,
+				Role:      "agent",
+				Parts: []requests.ResponsePart{
+					{Kind: "text", Text: message},
+				},
+				Kind: "message",
+			},
 		},
+
 		Artifacts: artifacts,
 		History:   session.History,
 		Kind:      "task",
