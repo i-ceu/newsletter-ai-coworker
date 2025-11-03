@@ -144,16 +144,15 @@ func (s *AgentService) handleBlogPostGeneration(ctx context.Context, session *re
 	// 	return res, nil
 	// }
 
+	blog := fmt.Sprintf("\nTitle: %s \n\n Content: %s", title, blogpost)
+
 	artifact := requests.Artifact{
 		ArtifactID: uuid.New().String(),
 		Name:       "blogpost",
 		Parts: []requests.ResponsePart{
 			{
-				Kind: "data",
-				Data: map[string]interface{}{
-					"title":   title,
-					"content": blogpost,
-				},
+				Kind: "text",
+				Text: blog,
 			},
 		},
 	}
