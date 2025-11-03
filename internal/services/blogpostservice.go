@@ -1,46 +1,47 @@
 package services
 
 import (
+	"blogpost-ai-coworker/internal/requests"
 	"context"
 	"fmt"
-	"newsletter-ai-coworker/internal/requests"
 
 	"github.com/tmc/langchaingo/llms"
 	"github.com/tmc/langchaingo/llms/openai"
 )
 
-type NewsletterService struct {
+type BlogPostService struct {
 	llm llms.Model
 }
 
-func NewNewsletterService(groqAPIKey string) *NewsletterService {
+func NewBlogPostService(groqAPIKey string) *BlogPostService {
 	llm, err := openai.New(
 		openai.WithToken(groqAPIKey),
 		openai.WithBaseURL("https://api.groq.com/openai/v1"),
 		openai.WithModel("groq/compound"),
 	)
 	if err != nil {
-		panic(fmt.Sprintf("failed to create newsletter service: %v", err))
+		panic(fmt.Sprintf("failed to create blogpost service: %v", err))
 	}
 
-	return &NewsletterService{llm: llm}
+	return &BlogPostService{llm: llm}
 }
 
-func (s *NewsletterService) getSystemPrompt() string {
+func (s *BlogPostService) getSystemPrompt() string {
 	return `GENERATE_NEWSLETTER|Title: `
 }
 
-func (s *NewsletterService) Generate(ctx context.Context, session *requests.SessionData, title string) (string, error) {
+func (s *BlogPostService) Generate(ctx context.Context, session *requests.SessionData, title string) (string, error) {
 	messages := []llms.MessageContent{
 		llms.TextParts(llms.ChatMessageTypeSystem, s.getSystemPrompt()),
-		llms.TextParts(llms.ChatMessageTypeSystem, "You are a newsletter writer. Create engaging, well-structured newsletters."),
-		llms.TextParts(llms.ChatMessageTypeHuman, fmt.Sprintf(`Create a cool newsletter based on the following:
+		llms.TextParts(llms.ChatMessageTypeSystem, "You are a blog writer. Create engaging, well-structured blog posts."),
+		llms.TextParts(llms.ChatMessageTypeHuman, fmt.Sprintf(`Create a cool blog post based on the following:
 
 Title and Content: %s
 
-Generate a well-structured newsletter with:
+Generate a well-structured blogpost with:
 - A catchy headline
 - An engaging introduction
+-if you notice any code snippets, include it in the blog explanation
 - 3-4 key points or sections with clear headings (use format "## Heading")
 - A conclusion or call-to-action
 

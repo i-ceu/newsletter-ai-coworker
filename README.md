@@ -1,1 +1,1 @@
-# newsletter-ai-coworker
+# blogpost-ai-coworker

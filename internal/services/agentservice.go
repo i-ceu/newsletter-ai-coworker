@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"newsletter-ai-coworker/internal/requests"
+	"blogpost-ai-coworker/internal/requests"
 
 	"github.com/google/uuid"
 	"github.com/tmc/langchaingo/llms"
@@ -17,13 +17,13 @@ import (
 
 type AgentService struct {
 	llm            llms.Model
-	newsletterSvc  *NewsletterService
+	blogpostSvc    *BlogPostService
 	infographicSvc *InfographicService
 	sessions       map[string]*requests.SessionData
 	mu             sync.RWMutex
 }
 
-func NewAgentService(groqAPIKey string, newsletterSvc *NewsletterService, infographicSvc *InfographicService) (*AgentService, error) {
+func NewAgentService(groqAPIKey string, blogpostSvc *BlogPostService, infographicSvc *InfographicService) (*AgentService, error) {
 	llm, err := openai.New(
 		openai.WithToken(groqAPIKey),
 		openai.WithBaseURL("https://api.groq.com/openai/v1"),
@@ -35,17 +35,17 @@ func NewAgentService(groqAPIKey string, newsletterSvc *NewsletterService, infogr
 
 	return &AgentService{
 		llm:            llm,
-		newsletterSvc:  newsletterSvc,
+		blogpostSvc:    blogpostSvc,
 		infographicSvc: infographicSvc,
 		sessions:       make(map[string]*requests.SessionData),
 	}, nil
 }
 
-func (s *AgentService) getOrCreateSession(taskID string) *requests.SessionData {
+func (s *AgentService) getOrCreateSession(MessageID string) *requests.SessionData {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if session, exists := s.sessions[taskID]; exists {
+	if session, exists := s.sessions[MessageID]; exists {
 		return session
 	}
 
@@ -54,7 +54,7 @@ func (s *AgentService) getOrCreateSession(taskID string) *requests.SessionData {
 		History:   []requests.HistoryMessage{},
 		Memory:    memory.NewConversationBuffer(),
 	}
-	s.sessions[taskID] = session
+	s.sessions[MessageID] = session
 	return session
 }
 
@@ -62,8 +62,8 @@ func (s *AgentService) getSystemPrompt() string {
 	return `GENERATE_NEWSLETTER|Title: `
 }
 
-func (s *AgentService) HandleMessage(ctx context.Context, taskID, userText string) (*requests.TaskResult, error) {
-	session := s.getOrCreateSession(taskID)
+func (s *AgentService) HandleMessage(ctx context.Context, MessageID, userText string) (*requests.TaskResult, error) {
+	session := s.getOrCreateSession(MessageID)
 
 	userHistoryMsg := s.createHistoryMessage("user", userText)
 	session.History = append(session.History, userHistoryMsg)
@@ -74,10 +74,10 @@ func (s *AgentService) HandleMessage(ctx context.Context, taskID, userText strin
 
 	session.Memory.SaveContext(ctx, map[string]any{}, map[string]any{"output": userText})
 
-	result := s.processAIResponse(ctx, session, taskID, userText)
+	result := s.processAIResponse(ctx, session, MessageID, userText)
 
-	agentHistoryMsg := s.createHistoryMessage("agent", result.Status.Message.Parts[0].Text)
-	agentHistoryMsg.MessageID = result.Status.Message.MessageID
+	agentHistoryMsg := s.createHistoryMessage("agent", result.Artifacts[0].Parts[0].Text)
+	agentHistoryMsg.MessageID = result.Artifacts[0].ArtifactID
 	session.History = append(session.History, agentHistoryMsg)
 
 	return result, nil
@@ -100,13 +100,13 @@ func (s *AgentService) buildMessages(ctx context.Context, session *requests.Sess
 	return messages
 }
 
-func (s *AgentService) processAIResponse(ctx context.Context, session *requests.SessionData, taskID, userText string) *requests.TaskResult {
+func (s *AgentService) processAIResponse(ctx context.Context, session *requests.SessionData, MessageID, userText string) *requests.TaskResult {
 	var artifacts []requests.Artifact
 	var finalResponse string
-	state := "in_progress"
+	state := "working"
 
 	// if strings.Contains(aiResponse, "GENERATE_NEWSLETTER|") {
-	finalResponse, artifacts = s.handleNewsletterGeneration(ctx, session, userText)
+	finalResponse, artifacts = s.handleBlogPostGeneration(ctx, session, userText)
 	// finalResponse, artifacts = s.handleInfographicGeneration(session)
 	// } else if strings.Contains(aiResponse, "GENERATE_INFOGRAPHIC") {
 	// } else {
@@ -114,16 +114,16 @@ func (s *AgentService) processAIResponse(ctx context.Context, session *requests.
 	// }
 
 	if s.isConversationComplete(finalResponse) {
-		state = "completed"
+		state = "working"
 	}
 
-	return s.buildTaskResult(taskID, session, state, finalResponse, artifacts)
+	return s.buildTaskResult(session, state, artifacts)
 }
 
-func (s *AgentService) handleNewsletterGeneration(ctx context.Context, session *requests.SessionData, userText string) (string, []requests.Artifact) {
+func (s *AgentService) handleBlogPostGeneration(ctx context.Context, session *requests.SessionData, userText string) (string, []requests.Artifact) {
 	// parts := strings.Split(aiResponse, "|")
 	// if len(parts) < 3 {
-	// 	return "I apologize, but I couldn't parse the newsletter details. Let's try again.", nil
+	// 	return "I apologize, but I couldn't parse the blogpost details. Let's try again.", nil
 	// }
 
 	title := userText
@@ -132,12 +132,12 @@ func (s *AgentService) handleNewsletterGeneration(ctx context.Context, session *
 	session.Title = title
 	// session.Content = content
 
-	newsletter, err := s.newsletterSvc.Generate(ctx, session, title)
+	blogpost, err := s.blogpostSvc.Generate(ctx, session, title)
 	if err != nil {
-		return fmt.Sprintf("I apologize, but I encountered an error generating the newsletter: %v\n\nWould you like to try again?", err), nil
+		return fmt.Sprintf("I apologize, but I encountered an error generating the blogpost: %v\n\nWould you like to try again?", err), nil
 	}
 
-	session.Newsletter = newsletter
+	session.BlogPost = blogpost
 
 	// res, dataURL := s.handleInfographicGeneration(session)
 	// if res != "Success" {
@@ -146,33 +146,33 @@ func (s *AgentService) handleNewsletterGeneration(ctx context.Context, session *
 
 	artifact := requests.Artifact{
 		ArtifactID: uuid.New().String(),
-		Name:       "newsletter",
+		Name:       "blogpost",
 		Parts: []requests.ResponsePart{
 			{
 				Kind: "data",
 				Data: map[string]interface{}{
 					"title":   title,
-					"content": newsletter,
+					"content": blogpost,
 				},
 			},
 		},
 	}
 
-	response := fmt.Sprintf("Newsletter generated successfully!\n\n%s\n\n═══════════════════════════════════════\n\nWould you like me to create an infographic for this newsletter?", newsletter)
+	response := fmt.Sprintf("BlogPost generated successfully!\n\n%s\n\n═══════════════════════════════════════\n\nWould you like me to create an infographic for this blogpost?", blogpost)
 
 	return response, []requests.Artifact{artifact}
 }
 
 func (s *AgentService) handleInfographicGeneration(session *requests.SessionData) (string, []requests.ResponsePart) {
-	if session.Newsletter == "" || session.Title == "" {
-		return "I don't have a newsletter to create an infographic for. Would you like to create a new newsletter?", nil
+	if session.BlogPost == "" || session.Title == "" {
+		return "I don't have a blogpost to create an infographic for. Would you like to create a new blogpost?", nil
 	}
 
 	outputPath := "cache/" + session.ContextID + "_infographic.png"
 
-	err := s.infographicSvc.Generate(session.Title, session.Newsletter, outputPath)
+	err := s.infographicSvc.Generate(session.Title, session.BlogPost, outputPath)
 	if err != nil {
-		return fmt.Sprintf("I apologize, but I encountered an error creating the infographic: %v\n\nWould you like to create another newsletter?", err), nil
+		return fmt.Sprintf("I apologize, but I encountered an error creating the infographic: %v\n\nWould you like to create another blogpost?", err), nil
 	}
 
 	artifactPart := []requests.ResponsePart{
@@ -203,23 +203,15 @@ func (s *AgentService) createHistoryMessage(role, text string) requests.HistoryM
 	}
 }
 
-func (s *AgentService) buildTaskResult(taskID string, session *requests.SessionData, state, message string, artifacts []requests.Artifact) *requests.TaskResult {
+func (s *AgentService) buildTaskResult(session *requests.SessionData, state string, artifacts []requests.Artifact) *requests.TaskResult {
 	msgID := uuid.New().String()
 
 	return &requests.TaskResult{
-		ID:        taskID,
+		ID:        msgID,
 		ContextID: session.ContextID,
 		Status: &requests.TaskStatus{
 			State:     state,
 			Timestamp: time.Now().UTC().Format(time.RFC3339),
-			Message: &requests.ResponseMessage{
-				MessageID: msgID,
-				Role:      "agent",
-				Parts: []requests.ResponsePart{
-					{Kind: "text", Text: message},
-				},
-				Kind: "message",
-			},
 		},
 		Artifacts: artifacts,
 		History:   session.History,

@@ -22,7 +22,6 @@ type ReqMessage struct {
 	Role      string        `json:"role"`
 	Parts     []MessagePart `json:"parts"`
 	MessageID string        `json:"messageId"`
-	TaskID    string        `json:"taskId"`
 }
 type MessagePart struct {
 	Kind string `json:"kind"`
@@ -49,9 +48,8 @@ type TaskResult struct {
 }
 
 type TaskStatus struct {
-	State     string           `json:"state"`
-	Timestamp string           `json:"timestamp"`
-	Message   *ResponseMessage `json:"message"`
+	State     string `json:"state"`
+	Timestamp string `json:"timestamp"`
 }
 
 type ResponseMessage struct {
@@ -88,10 +86,10 @@ type RPCError struct {
 
 // Session management
 type SessionData struct {
-	ContextID  string
-	History    []HistoryMessage
-	Memory     *memory.ConversationBuffer
-	Title      string
-	Content    string
-	Newsletter string
+	ContextID string
+	History   []HistoryMessage
+	Memory    *memory.ConversationBuffer
+	Title     string
+	Content   string
+	BlogPost  string
 }

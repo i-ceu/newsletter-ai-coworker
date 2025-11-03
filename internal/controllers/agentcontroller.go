@@ -1,11 +1,11 @@
 package controllers
 
 import (
+	"blogpost-ai-coworker/internal/requests"
+	"blogpost-ai-coworker/internal/services"
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"newsletter-ai-coworker/internal/requests"
-	"newsletter-ai-coworker/internal/services"
 )
 
 type AgentController struct {
@@ -47,7 +47,8 @@ func (c *AgentController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	userText := c.extractUserText(req.Params.Message.Parts)
 
-	result, err := c.agentService.HandleMessage(r.Context(), req.Params.Message.TaskID, userText)
+	fmt.Println(req.Params.Message.MessageID)
+	result, err := c.agentService.HandleMessage(r.Context(), req.Params.Message.MessageID, userText)
 	if err != nil {
 		c.sendError(w, req.ID, -32000, err.Error())
 		return
@@ -57,12 +58,7 @@ func (c *AgentController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 }
 
 func (c *AgentController) extractUserText(parts []requests.MessagePart) string {
-	for _, part := range parts {
-		if part.Kind == "text" {
-			return part.Text
-		}
-	}
-	return ""
+	return parts[0].Text
 }
 
 func (c *AgentController) sendSuccess(w http.ResponseWriter, id string, result *requests.TaskResult) {

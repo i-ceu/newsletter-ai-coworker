@@ -1,4 +1,4 @@
-module newsletter-ai-coworker
+module blogpost-ai-coworker
 
 go 1.25.3
 

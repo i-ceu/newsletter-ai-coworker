@@ -11,7 +11,7 @@ import (
 func RegisterRoutes() {
 	cfg := config.Load()
 
-	newsletterSvc := services.NewNewsletterService(cfg.GroqAPIKey)
+	newsletterSvc := services.NewBlogPostService(cfg.GroqAPIKey)
 	infographicSvc := services.NewInfographicService()
 	agentSvc, err := services.NewAgentService(cfg.GroqAPIKey, newsletterSvc, infographicSvc)
 	if err != nil {
@@ -22,6 +22,6 @@ func RegisterRoutes() {
 
 	http.Handle("/agent", controller)
 
-	log.Printf("Newsletter Agent Server running on port %s", cfg.Port)
+	log.Printf("BlogPost Agent Server running on port %s", cfg.Port)
 	log.Fatal(http.ListenAndServe(":"+cfg.Port, nil))
 }
