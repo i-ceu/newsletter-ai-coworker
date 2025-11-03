@@ -47,8 +47,7 @@ func (c *AgentController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	userText := c.extractUserText(req.Params.Message.Parts)
 
-	fmt.Println(req.Params.Message.MessageID)
-	result, err := c.agentService.HandleMessage(r.Context(), req.Params.Message.MessageID, userText)
+	result, err := c.agentService.HandleMessage(r.Context(), req.Params.Message.MessageID, userText, req.Params.Message.TaskID)
 	if err != nil {
 		c.sendError(w, req.ID, -32000, err.Error())
 		return

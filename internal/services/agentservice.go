@@ -62,7 +62,7 @@ func (s *AgentService) getSystemPrompt() string {
 	return `GENERATE_NEWSLETTER|Title: `
 }
 
-func (s *AgentService) HandleMessage(ctx context.Context, MessageID, userText string) (*requests.TaskResult, error) {
+func (s *AgentService) HandleMessage(ctx context.Context, MessageID, userText, taskID string) (*requests.TaskResult, error) {
 	session := s.getOrCreateSession(MessageID)
 
 	userHistoryMsg := s.createHistoryMessage("user", userText)
@@ -74,7 +74,7 @@ func (s *AgentService) HandleMessage(ctx context.Context, MessageID, userText st
 
 	session.Memory.SaveContext(ctx, map[string]any{}, map[string]any{"output": userText})
 
-	result := s.processAIResponse(ctx, session, MessageID, userText)
+	result := s.processAIResponse(ctx, session, MessageID, userText, taskID)
 
 	agentHistoryMsg := s.createHistoryMessage("agent", result.Artifacts[0].Parts[0].Text)
 	agentHistoryMsg.MessageID = result.Artifacts[0].ArtifactID
@@ -100,7 +100,7 @@ func (s *AgentService) buildMessages(ctx context.Context, session *requests.Sess
 	return messages
 }
 
-func (s *AgentService) processAIResponse(ctx context.Context, session *requests.SessionData, MessageID, userText string) *requests.TaskResult {
+func (s *AgentService) processAIResponse(ctx context.Context, session *requests.SessionData, MessageID, userText, taskID string) *requests.TaskResult {
 	var artifacts []requests.Artifact
 	var finalResponse string
 	state := "completed"
@@ -117,7 +117,7 @@ func (s *AgentService) processAIResponse(ctx context.Context, session *requests.
 		state = "completed"
 	}
 
-	return s.buildTaskResult(session, state, finalResponse, artifacts)
+	return s.buildTaskResult(session, state, finalResponse, taskID, artifacts)
 }
 
 func (s *AgentService) handleBlogPostGeneration(ctx context.Context, session *requests.SessionData, userText string) (string, []requests.Artifact) {
@@ -203,12 +203,11 @@ func (s *AgentService) createHistoryMessage(role, text string) requests.HistoryM
 	}
 }
 
-func (s *AgentService) buildTaskResult(session *requests.SessionData, state, message string, artifacts []requests.Artifact) *requests.TaskResult {
-	ID := uuid.New().String()
+func (s *AgentService) buildTaskResult(session *requests.SessionData, state, message, taskID string, artifacts []requests.Artifact) *requests.TaskResult {
 	msgID := uuid.New().String()
 
 	return &requests.TaskResult{
-		ID:        ID,
+		ID:        taskID,
 		ContextID: session.ContextID,
 		Status: &requests.TaskStatus{
 			State:     state,

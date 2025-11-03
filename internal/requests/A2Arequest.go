@@ -22,6 +22,7 @@ type ReqMessage struct {
 	Role      string        `json:"role"`
 	Parts     []MessagePart `json:"parts"`
 	MessageID string        `json:"messageId"`
+	TaskID    string        `json:"taskId"`
 }
 type MessagePart struct {
 	Kind string `json:"kind"`
