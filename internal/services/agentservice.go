@@ -103,7 +103,7 @@ func (s *AgentService) buildMessages(ctx context.Context, session *requests.Sess
 func (s *AgentService) processAIResponse(ctx context.Context, session *requests.SessionData, MessageID, userText string) *requests.TaskResult {
 	var artifacts []requests.Artifact
 	var finalResponse string
-	state := "working"
+	state := "completed"
 
 	// if strings.Contains(aiResponse, "GENERATE_NEWSLETTER|") {
 	finalResponse, artifacts = s.handleBlogPostGeneration(ctx, session, userText)
@@ -114,7 +114,7 @@ func (s *AgentService) processAIResponse(ctx context.Context, session *requests.
 	// }
 
 	if s.isConversationComplete(finalResponse) {
-		state = "working"
+		state = "completed"
 	}
 
 	return s.buildTaskResult(session, state, artifacts)
