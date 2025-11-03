@@ -1,0 +1,24 @@
+{
+  "active": false,
+  "category": "utilities",
+  "description": "A workflow that creates blogposts",
+  "id": "iceu-blogpost-001",
+  "name": "blogpost_agent",
+  "long_description": "You are a helpful assistant that provides sample BlogPosts.\n\nYour primary function is to help users generate BlogPosts from title and decription they send. When responding:\n- Always ask for the blog title if none is provided\n Ask for the content/topic description \n Confirm the details and ask if they want to proceed \n-Keep responses concise but informative\n- Use the blogpostgeneration tool with title and content",
+  "short_description": "creates blogpost from title and content given",
+  "nodes": [
+    {
+      "id": "blogpost_agent",
+      "name": "blogpost agent",
+      "parameters": {},
+      "position": [816, -112],
+      "type": "a2a/mastra-a2a-node",
+      "typeVersion": 1,
+      "url": "https://newsletter-ai-coworker-i-ceu4383-amxl8p89.leapcell.dev/agent"
+    }
+  ],
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  }  
+}

@@ -45,11 +45,13 @@ type TaskResult struct {
 	Status    *TaskStatus      `json:"status"`
 	Artifacts []Artifact       `json:"artifacts,omitempty"`
 	History   []HistoryMessage `json:"history"`
+	Kind      string           `json:"kind"`
 }
 
 type TaskStatus struct {
-	State     string `json:"state"`
-	Timestamp string `json:"timestamp"`
+	State     string           `json:"state"`
+	Timestamp string           `json:"timestamp"`
+	Message   *ResponseMessage `json:"message"`
 }
 
 type ResponseMessage struct {

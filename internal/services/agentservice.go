@@ -215,5 +215,6 @@ func (s *AgentService) buildTaskResult(session *requests.SessionData, state stri
 		},
 		Artifacts: artifacts,
 		History:   session.History,
+		Kind:      "task",
 	}
 }
