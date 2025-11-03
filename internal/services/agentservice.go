@@ -204,10 +204,11 @@ func (s *AgentService) createHistoryMessage(role, text string) requests.HistoryM
 }
 
 func (s *AgentService) buildTaskResult(session *requests.SessionData, state, message string, artifacts []requests.Artifact) *requests.TaskResult {
+	ID := uuid.New().String()
 	msgID := uuid.New().String()
 
 	return &requests.TaskResult{
-		ID:        msgID,
+		ID:        ID,
 		ContextID: session.ContextID,
 		Status: &requests.TaskStatus{
 			State:     state,
