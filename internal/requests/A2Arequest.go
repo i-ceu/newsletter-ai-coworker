@@ -51,7 +51,7 @@ type TaskResult struct {
 type TaskStatus struct {
 	State     string           `json:"state"`
 	Timestamp string           `json:"timestamp"`
-	Message   *ResponseMessage `json:"message"`
+	Message   *ResponseMessage `json:"message,omitempty"`
 }
 
 type ResponseMessage struct {
