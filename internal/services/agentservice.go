@@ -105,13 +105,7 @@ func (s *AgentService) processAIResponse(ctx context.Context, session *requests.
 	var finalResponse string
 	state := "completed"
 
-	// if strings.Contains(aiResponse, "GENERATE_NEWSLETTER|") {
 	finalResponse, artifacts = s.handleBlogPostGeneration(ctx, session, userText)
-	// finalResponse, artifacts = s.handleInfographicGeneration(session)
-	// } else if strings.Contains(aiResponse, "GENERATE_INFOGRAPHIC") {
-	// } else {
-	// 	finalResponse = aiResponse
-	// }
 
 	if s.isConversationComplete(finalResponse) {
 		state = "completed"
@@ -121,16 +115,11 @@ func (s *AgentService) processAIResponse(ctx context.Context, session *requests.
 }
 
 func (s *AgentService) handleBlogPostGeneration(ctx context.Context, session *requests.SessionData, userText string) (string, []requests.Artifact) {
-	// parts := strings.Split(aiResponse, "|")
-	// if len(parts) < 3 {
-	// 	return "I apologize, but I couldn't parse the blogpost details. Let's try again.", nil
-	// }
+
 
 	title := userText
-	// content := strings.TrimSpace(strings.TrimPrefix(parts[2], "Content: "))
 
 	session.Title = title
-	// session.Content = content
 
 	blogpost, err := s.blogpostSvc.Generate(ctx, session, title)
 	if err != nil {
@@ -138,11 +127,6 @@ func (s *AgentService) handleBlogPostGeneration(ctx context.Context, session *re
 	}
 
 	session.BlogPost = blogpost
-
-	// res, dataURL := s.handleInfographicGeneration(session)
-	// if res != "Success" {
-	// 	return res, nil
-	// }
 
 	blog := fmt.Sprintf("\nTitle: %s \n\n Content: %s", title, blogpost)
 
