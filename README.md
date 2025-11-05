@@ -16,7 +16,7 @@ A conversational AI agent built with Go, LangChain, and Groq that generates prof
 ### 1. Clone the repository
 
 ```bash
-git clone <your-repo-url>
+git clone [<your-repo-url>](https://github.com/i-ceu/newsletter-ai-coworker.git)
 cd blog-generator
 ```
 
