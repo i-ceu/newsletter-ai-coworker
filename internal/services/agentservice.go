@@ -3,7 +3,6 @@ package services
 import (
 	"context"
 	"fmt"
-	"strings"
 	"sync"
 	"time"
 
@@ -58,9 +57,9 @@ func (s *AgentService) getOrCreateSession(MessageID string) *requests.SessionDat
 	return session
 }
 
-func (s *AgentService) getSystemPrompt() string {
-	return `GENERATE_NEWSLETTER|Title: `
-}
+// func (s *AgentService) getSystemPrompt() string {
+// 	return `GENERATE_NEWSLETTER|Title: `
+// }
 
 func (s *AgentService) HandleMessage(ctx context.Context, MessageID, userText, taskID string) (*requests.TaskResult, error) {
 	session := s.getOrCreateSession(MessageID)
@@ -83,22 +82,22 @@ func (s *AgentService) HandleMessage(ctx context.Context, MessageID, userText, t
 	return result, nil
 }
 
-func (s *AgentService) buildMessages(ctx context.Context, session *requests.SessionData, userText string) []llms.MessageContent {
-	messages := []llms.MessageContent{
-		llms.TextParts(llms.ChatMessageTypeSystem, s.getSystemPrompt()),
-	}
+// func (s *AgentService) buildMessages(ctx context.Context, session *requests.SessionData, userText string) []llms.MessageContent {
+// 	messages := []llms.MessageContent{
+// 		llms.TextParts(llms.ChatMessageTypeSystem, s.getSystemPrompt()),
+// 	}
 
-	memoryVars, err := session.Memory.LoadMemoryVariables(ctx, map[string]any{})
-	if err == nil {
-		if history, ok := memoryVars["history"].(string); ok && history != "" {
-			messages = append(messages, llms.TextParts(llms.ChatMessageTypeHuman, history))
-		}
-	}
+// 	memoryVars, err := session.Memory.LoadMemoryVariables(ctx, map[string]any{})
+// 	if err == nil {
+// 		if history, ok := memoryVars["history"].(string); ok && history != "" {
+// 			messages = append(messages, llms.TextParts(llms.ChatMessageTypeHuman, history))
+// 		}
+// 	}
 
-	messages = append(messages, llms.TextParts(llms.ChatMessageTypeHuman, userText))
+// 	messages = append(messages, llms.TextParts(llms.ChatMessageTypeHuman, userText))
 
-	return messages
-}
+// 	return messages
+// }
 
 func (s *AgentService) processAIResponse(ctx context.Context, session *requests.SessionData, MessageID, userText, taskID string) *requests.TaskResult {
 	var artifacts []requests.Artifact
@@ -107,15 +106,14 @@ func (s *AgentService) processAIResponse(ctx context.Context, session *requests.
 
 	finalResponse, artifacts = s.handleBlogPostGeneration(ctx, session, userText)
 
-	if s.isConversationComplete(finalResponse) {
-		state = "completed"
-	}
+	// if s.isConversationComplete(finalResponse) {
+	// 	state = "completed"
+	// }
 
 	return s.buildTaskResult(session, state, finalResponse, taskID, artifacts)
 }
 
 func (s *AgentService) handleBlogPostGeneration(ctx context.Context, session *requests.SessionData, userText string) (string, []requests.Artifact) {
-
 
 	title := userText
 
@@ -146,34 +144,34 @@ func (s *AgentService) handleBlogPostGeneration(ctx context.Context, session *re
 	return response, []requests.Artifact{artifact}
 }
 
-func (s *AgentService) handleInfographicGeneration(session *requests.SessionData) (string, []requests.ResponsePart) {
-	if session.BlogPost == "" || session.Title == "" {
-		return "I don't have a blogpost to create an infographic for. Would you like to create a new blogpost?", nil
-	}
+// func (s *AgentService) handleInfographicGeneration(session *requests.SessionData) (string, []requests.ResponsePart) {
+// 	if session.BlogPost == "" || session.Title == "" {
+// 		return "I don't have a blogpost to create an infographic for. Would you like to create a new blogpost?", nil
+// 	}
 
-	outputPath := "cache/" + session.ContextID + "_infographic.png"
+// 	outputPath := "cache/" + session.ContextID + "_infographic.png"
 
-	err := s.infographicSvc.Generate(session.Title, session.BlogPost, outputPath)
-	if err != nil {
-		return fmt.Sprintf("I apologize, but I encountered an error creating the infographic: %v\n\nWould you like to create another blogpost?", err), nil
-	}
+// 	err := s.infographicSvc.Generate(session.Title, session.BlogPost, outputPath)
+// 	if err != nil {
+// 		return fmt.Sprintf("I apologize, but I encountered an error creating the infographic: %v\n\nWould you like to create another blogpost?", err), nil
+// 	}
 
-	artifactPart := []requests.ResponsePart{
-		{
-			Kind:    "file",
-			FileURL: outputPath,
-		},
-	}
+// 	artifactPart := []requests.ResponsePart{
+// 		{
+// 			Kind:    "file",
+// 			FileURL: outputPath,
+// 		},
+// 	}
 
-	response := "Success"
+// 	response := "Success"
 
-	return response, artifactPart
-}
+// 	return response, artifactPart
+// }
 
-func (s *AgentService) isConversationComplete(response string) bool {
-	lower := strings.ToLower(response)
-	return strings.Contains(lower, "goodbye") || strings.Contains(lower, "have a great day")
-}
+// func (s *AgentService) isConversationComplete(response string) bool {
+// 	lower := strings.ToLower(response)
+// 	return strings.Contains(lower, "goodbye") || strings.Contains(lower, "have a great day")
+// }
 
 func (s *AgentService) createHistoryMessage(role, text string) requests.HistoryMessage {
 	return requests.HistoryMessage{
