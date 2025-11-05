@@ -17,7 +17,7 @@ A conversational AI agent built with Go, LangChain, and Groq that generates prof
 
 ```bash
 git clone https://github.com/i-ceu/newsletter-ai-coworker.git
-cd blog-generator
+cd newsletter-ai-coworker
 ```
 
 ### 2. Install dependencies
@@ -27,13 +27,7 @@ go mod download
 ```
 
 ### 3. Set environment variables
-
-```bash
-export GROQ_API_KEY="gsk_your_key_here"
-export PORT="8080"  # Optional, defaults to 8080
-```
-
-Or create a `.env` file:
+create a `.env` file:
 
 ```
 GROQ_API_KEY=gsk_your_key_here
