@@ -26,22 +26,22 @@ func (c *AgentController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	var req requests.A2ARequest
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		c.sendError(w, "", -32700, "Parse error")
+		c.sendError(w, "", 400, "Parse error")
 		return
 	}
 
 	if req.JsonRPC != "2.0" {
-		c.sendError(w, req.ID, -32600, "Invalid Request")
+		c.sendError(w, req.ID, 400, "Invalid Request")
 		return
 	}
 
 	if req.Method != "message/send" {
-		c.sendError(w, req.ID, -32601, "Method not found")
+		c.sendError(w, req.ID, 400, "Method not found")
 		return
 	}
 
 	if req.Params == nil || req.Params.Message == nil {
-		c.sendError(w, req.ID, -32602, "Invalid params")
+		c.sendError(w, req.ID, 422, "Invalid params")
 		return
 	}
 
@@ -49,7 +49,7 @@ func (c *AgentController) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 
 	result, err := c.agentService.HandleMessage(r.Context(), req.Params.Message.MessageID, userText, req.ID)
 	if err != nil {
-		c.sendError(w, req.ID, -32000, err.Error())
+		c.sendError(w, req.ID, 500, err.Error())
 		return
 	}
 
